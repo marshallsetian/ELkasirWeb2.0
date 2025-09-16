@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 fw-bold text-center text-md-start">Daftar Kasir</h2>
+
+    <!-- Form Tambah Kasir -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('add_cashier') }}" class="row g-2 align-items-end">
+                <div class="col-12 col-md-8">
+                    <input type="text" name="name" class="form-control" placeholder="Nama Kasir" required>
+                </div>
+                <div class="col-12 col-md-4 d-grid">
+                    <button type="submit" class="btn btn-warning w-100">
+                        Tambah Kasir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabel Kasir -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0" style="font-size: 0.9rem;">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama Kasir</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in cashiers %}
+                        <tr>
+                            <td>{{ c.id }}</td>
+                            <td>{{ c.name }}</td>
+                            <td class="text-center">
+                                <form method="POST" action="{{ url_for('delete_cashier', cashier_id=c.id) }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger btn-delete">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">Belum ada kasir terdaftar</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// SweetAlert2 untuk Flash Messages dari Flask
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: {{ msg|tojson }},
+                timer: 2500,
+                showConfirmButton: false,
+            });
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+// SweetAlert2 untuk konfirmasi hapus
+document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', function(e){
+        e.preventDefault();
+        const form = this.closest('form');
+        Swal.fire({
+            title: 'Yakin ingin menghapus kasir?',
+            text: "Data kasir akan dihapus permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Hapus',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

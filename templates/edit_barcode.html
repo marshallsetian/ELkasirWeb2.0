@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block title %}Edit QR Code Link{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height:75vh; background: linear-gradient(135deg, #e0f7f1, #ffffff);">
+  <div class="card shadow-lg p-4 text-center" style="width: 100%; max-width: 480px; border-radius: 16px; background:#fdfdfd;">
+    
+    <h4 class="fw-bold mb-4" style="color:#1aa397;">Pembayaran Transaksi Elekronik</h4>
+    
+
+
+    <!-- QR Code Preview -->
+    <div class="mt-3 text-center">
+      <img id="qrPreview" src="{{ url_for('generate_qrcode_tx', data=barcode_link) }}" 
+           alt="QR Code Preview" 
+           style="width:220px; height:220px; border:4px solid #ddd; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,0.12);">
+    </div>
+
+    <!-- Form Edit QR Code -->
+    <form action="{{ url_for('update_transaction_barcode') }}" method="POST" class="mt-4">
+      <div class="mb-3">
+        <label for="barcode_link" class="form-label fw-semibold">Link QR Code</label>
+        <input type="url" class="form-control text-center shadow-sm" id="barcode_link" name="barcode_link" 
+               placeholder="Masukkan link baru..." value="{{ barcode_link }}" required
+               style="border-radius:12px; border:1px solid #ccc;">
+      </div>
+      <div class="text-center">
+        <button type="submit" class="btn btn-gradient fw-semibold px-5 py-2" 
+                style="border-radius:12px; background: linear-gradient(90deg, #2dc1b3, #1aa397); color:#fff; transition: all 0.3s;">
+          Update QR Code
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS untuk update preview otomatis saat user ketik URL baru -->
+<script>
+const input = document.getElementById("barcode_link");
+const preview = document.getElementById("qrPreview");
+
+input.addEventListener("input", () => {
+    const url = input.value.trim();
+    if (url) {
+        preview.src = "{{ url_for('generate_qrcode_tx') }}?data=" + encodeURIComponent(url);
+    }
+});
+</script>
+
+<style>
+.btn-gradient:hover {
+  background: linear-gradient(90deg, #1aa397, #2dc1b3);
+  transform: scale(1.05);
+}
+.card:hover {
+  transform: translateY(-5px);
+}
+#qrPreview:hover {
+  transform: scale(1.05);
+}
+</style>
+{% endblock %}

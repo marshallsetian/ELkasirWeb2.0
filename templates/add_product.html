@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-0">
+  <h4 class="fw-bold mb-3">Tambah Produk</h4>
+
+  <form action="{{ url_for('add_product') }}" method="POST">
+    <div class="mb-3">
+      <label for="name" class="form-label">Nama Produk</label>
+      <input type="text" name="name" id="name" class="form-control" placeholder="Nama produk" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="price" class="form-label">Harga</label>
+      <input type="text" name="price" id="price" class="form-control" placeholder="0" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="stock" class="form-label">Stok</label>
+      <input type="number" name="stock" id="stock" class="form-control" placeholder="0" min="0" required>
+    </div>
+
+ <div class="d-grid gap-3 d-md-flex justify-content-center mt-3">
+  <button type="submit" 
+          class="btn btn-gradient-success btn-equal">Simpan Produk
+  </button>
+  <a href="{{ url_for('products') }}" 
+     class="btn btn-gradient-secondary btn-equal">Kembali
+  </a>
+</div>
+
+<style>
+/* Tombol gradient soft */
+.btn-gradient-success {
+  background: linear-gradient(90deg, #4ec4de, #2d76ce);
+  color: white;
+  border: none;
+  border-radius: 50px; /* pill */
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-success:hover {
+  background: linear-gradient(90deg, #3fce6c, #2cc38c);
+  transform: translateY(-2px);
+}
+
+.btn-gradient-secondary {
+  background: linear-gradient(90deg, #d9e355, #e1cb59);
+  color: white;
+  border: none;
+  border-radius: 50px; /* pill */
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-secondary:hover {
+  background: linear-gradient(90deg, #eab565, #decd33);
+  transform: translateY(-2px);
+}
+
+/* Samakan ukuran box tombol */
+.btn-equal {
+  display: inline-block;
+  width: 250px;   /* lebar sama untuk semua tombol */
+  text-align: center;
+}
+</style>
+
+
+<script>
+// Fungsi format angka ribuan otomatis
+const priceInput = document.getElementById("price");
+
+priceInput.addEventListener("input", function(e){
+    let value = this.value.replace(/\D/g,''); // hapus semua non-digit
+    if(!value) value = "0";
+    // tambahkan titik ribuan
+    this.value = parseInt(value).toLocaleString('id-ID', {minimumFractionDigits: 0});
+});
+
+// Pastikan saat submit, kirimkan angka asli tanpa titik
+document.querySelector("form").addEventListener("submit", function(){
+    const rawValue = priceInput.value.replace(/\./g,'');
+    priceInput.value = rawValue;
+});
+</script>
+{% endblock %}

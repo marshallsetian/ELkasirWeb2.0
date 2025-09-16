@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+.info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.info-table td.label {
+    width: 30%;
+    text-align: left;
+    padding-right: 4px;
+}
+.info-table td.colon {
+    width: 5%;
+    text-align: right;
+    padding-right: 2px;
+}
+.info-table td {
+    vertical-align: top;
+}
+</style>
+
+<div class="invoice-container">
+  <!-- Header toko -->
+  <div class="text-center mb-1 mt-2 mt-3">
+    <h5>{{ template.store_name or "Nama Toko" }}</h5>
+    <div class="text-small">{{ template.store_address or "Alamat toko belum diisi" }}</div>
+  </div>
+  <hr>
+
+  <!-- Info transaksi -->
+  <table class="info-table mb-1 text-small">
+    <tr>
+      <td class="label">No.Transaksi</td>
+      <td class="colon">:</td>
+      <td>{{ tx_id or "xxxxxxx" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Tanggal</td>
+      <td class="colon">:</td>
+      <td>{{ created_at.strftime("%d-%m-%Y") if created_at else "—" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Jam</td>
+      <td class="colon">:</td>
+      <td>{{ created_at.strftime("%H:%M") if created_at else "—" }}</td>
+    </tr>
+  </table>
+  <hr>
+
+  <!-- Daftar barang -->
+  <table class="items text-small mt-1">
+    <thead>
+      <tr>
+        <th>Produk</th>
+        <th class="text-center">Qty</th>
+        <th class="text-end">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item['name'] }}</td>
+        <td class="text-center">{{ item['qty'] }}</td>
+        <td class="text-end">{{ "{:,.0f}".format(item.subtotal).replace(',', '.') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <hr>
+
+  <!-- Ringkasan -->
+  <table class="summary text-small">
+    <tr>
+      <td>Total</td>
+      <td class="text-end">Rp {{ "{:,.0f}".format(subtotal).replace(',', '.') }}</td>
+    </tr>
+    <tr>
+      <td>Diskon</td>
+      <td class="text-end">{{ "{:.0f}".format(discount) }}%</td>
+    </tr>
+    <tr>
+      <td><strong>Subtotal</strong></td>
+      <td class="text-end"><strong>Rp {{ "{:,.0f}".format(total).replace(',', '.') }}</strong></td>
+    </tr>
+    <tr>
+      <td>Bayar</td>
+      <td class="text-end">Rp {{ "{:,.0f}".format(paid).replace(',', '.') }}</td>
+    </tr>
+    <tr>
+      <td>Kembalian</td>
+      <td class="text-end"><strong>Rp {{ "{:,.0f}".format(change).replace(',', '.') }}</strong></td>
+    </tr>
+  </table>
+
+  <hr>
+  <div class="text-center text-small mb-2">
+    <em>{{ template.footer_note or "Terima kasih sudah berbelanja 🙏" }}</em>
+  </div>
+</div>
+
+<!-- Barcode container -->
+<div class="barcode-container text-center mt-2">
+  <img id="barcode"
+       src="{{ url_for('generate_qrcode_tx', data=barcode_link) }}"
+       alt="QR Code"
+       class="barcode-img">
+</div>
+
+<!-- Tombol cetak hanya tampil di layar -->
+<div class="text-center mt-2 no-print">
+  <a href="javascript:window.print()" class="btn btn-success btn-sm px-3">🖨️ Cetak</a>
+</div>
+
+<style>
+.barcode-container {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}
+.barcode-img {
+    max-width: 250px; /* lebih besar karena 80mm */
+    height: auto;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    padding: 4px;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.barcode-img:hover {
+    transform: scale(1.05);
+    transition: 0.2s;
+}
+@media print {
+    .barcode-img {
+        max-width: 260px;
+        border: none;
+        box-shadow: none;
+    }
+}
+</style>
+
+<style>
+body { font-family: 'Poppins', sans-serif; font-size: 11px; background: #f8f9fa; }
+.invoice-container {
+  width: 300px;   /* ≈ 80mm */
+  margin: auto;
+  background: #fff;
+  padding: 4px 8px;
+}
+.invoice-container h5 { font-size: 14px; margin-bottom: 2px; }
+.text-small { font-size: 11px; margin-bottom: 2px; }
+table { width: 100%; border-collapse: collapse; }
+td, th { font-size: 11px; padding: 2px 3px; }
+.text-center { text-align: center; }
+.text-end { text-align: right; }
+hr { border: 0; border-top: 1px dashed #000; margin: 3px 0; }
+
+@media print {
+  .invoice-container {
+    width: 80mm;
+    max-width: 80mm;
+    padding: 4px 8px;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0 auto;
+  }
+  body { margin: 0; }
+  @page { size: 80mm auto; margin: 0; }
+  hr { border-top: 1px dashed #000; margin: 3px 0; }
+}
+</style>
+
+<script>
+  window.onload = () => { window.print(); }
+</script>
+
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layanan Bantuan Pelanggan & Fitur Kasir</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #e0f7f1;
+  color: #333;
+  margin:0;
+  padding:0;
+}
+header {
+  background: #16a085;
+  color: white;
+  padding: 60px 20px;
+  margin: auto;
+  text-align: center;
+}
+header h1 { font-size: 3rem; font-weight: 600; animation: fadeInDown 1s ease-in-out;}
+header p { margin-top: 15px; font-size: 1.2rem; animation: fadeInUp 1s ease-in-out;}
+@keyframes fadeInDown { 0% {opacity: 0; transform: translateY(-50px);} 100% {opacity: 1; transform: translateY(0);}}
+@keyframes fadeInUp { 0% {opacity: 0; transform: translateY(50px);} 100% {opacity: 1; transform: translateY(0);}}
+
+.service-description {
+  background: #d0f2eb;
+  border-radius: 15px;
+  padding: 25px;
+  margin: 40px auto;
+  text-align: center;
+  max-width: 1000px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.service-description h3 { color: #16a085; margin-bottom: 15px; }
+.service-description p { font-size: 1.05rem; color: #333; }
+
+.row-feature {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.feature-box {
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  color: white;
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 180px; /* tinggi minimum seragam */
+}
+
+.feature-box i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.feature-box h4 {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 1rem;
+}
+
+.feature-box p {
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+
+.feature-box:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Background colors */
+.bg-user { background: #1abc9c; }
+.bg-product { background: #16a085; }
+.bg-transaction { background: #2ecc71; }
+.bg-invoice { background: #27ae60; }
+.bg-report { background: #3498db; }
+.bg-modern { background: #f39c12; }
+.bg-extra { background: #d35400; }
+.bg-barcode { background: #8e44ad; }
+
+
+/* Background colors */
+.bg-user { background: #f5d846; }
+.bg-product { background: #cf2b80; }
+.bg-transaction { background: #3241c6; }
+.bg-invoice { background: #27ae60; }
+.bg-report { background: #3498db; }
+.bg-cloud { background: #2980b9; }
+.bg-modern { background: #f39c12; }
+.bg-extra { background: #d35400; }
+.bg-barcode { background: #8e44ad; }
+.bg-dashboard { background: #179026; }
+
+/* FAQ */
+.faq-card {
+  background: #d0f2eb;
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 1000px;
+  margin: 40px auto;
+}
+.faq-card h2 { color: #16a085;; margin-bottom: 15px; text-align: center; }
+.faq-button {
+  width: 100%;
+  text-align: left;
+  background: #16a085;
+  color: white;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.faq-button:hover { background: #2b7f6e }
+.faq-content {
+  display: none;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  background: #bcdee9;
+  border-radius: 10px;
+  color: #333;
+}
+
+/* Footer */
+footer { background: #16a085; color: white; text-align: center; padding: auto 20px; }
+footer a { color: white; text-decoration: underline; }
+</style>
+<header class="text-center py-3" style="background-color:#16a085; color:white;">
+  <h1 class="text-center mb-4" style="color:#f7f9f9;">Layanan Pelanggan</h1>
+  <p class="mb-0">EL Project Siap Membantu Kebutuhan Bisnis Anda</p>
+</header>
+<div class="service-description mt-4">
+  <h3 class="h5 fw-bold mb-2">Tentang Layanan Kami</h3>
+  <p class="mb-0">
+    Kami adalah pengembang aplikasi dan solusi digital profesional yang berkomitmen menghadirkan layanan terbaik untuk kebutuhan bisnis dan personal Anda.<br>
+    Kami menawarkan berbagai layanan, termasuk pembuatan situs web modern, pengembangan aplikasi POS & inventaris, pembuatan undangan digital, website promosi, pembuatan Bot, dan solusi aplikasi khusus sesuai kebutuhan Anda.<br>
+    Dengan pengalaman dan dedikasi, kami memastikan setiap proyek ditangani secara profesional, inovatif, dan sesuai standar permintaan pelanggan.
+  </p>
+</div>
+
+
+  <h1 class="text-center mb-4" style="color:#16a085;">Fitur Program Kasir</h1>
+  <div class="row row-feature g-3 justify-content-center">
+    <div class="col-6 col-md-3"><div class="feature-box bg-user"><i class="bi bi-people-fill"></i><h4>Multi-User Login</h4><p>Login terpisah, database masing-masing user.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-product"><i class="bi bi-box-seam"></i><h4>Manajemen Produk</h4><p>Tambah, edit, hapus, autocomplete nama barang.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-transaction"><i class="bi bi-cart-fill"></i><h4>Sistem Transaksi</h4><p>Input barang, update stok otomatis, edit nota lama.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-invoice"><i class="bi bi-printer-fill"></i><h4>Cetak Invoice</h4><p>Layout profesional untuk printer struk 58mm dan 80mm.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-report"><i class="bi bi-bar-chart-fill"></i><h4>Riwayat & Laporan</h4><p>Simpan data Excel/CSV yang rapi dan jelas, grafik penjualan, top produk.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-modern"><i class="bi bi-lightning-fill"></i><h4>POS Modern</h4><p>Autofill harga, format ribuan, animasi interaktif.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-extra"><i class="bi bi-gear-fill"></i><h4>Ekstra Fitur</h4><p>Reset keranjang, filter/search, tombol proses transaksi.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-barcode"><i class="bi bi-upc-scan"></i><h4>Fitur Barcode</h4><p>Scan barcode produk untuk input cepat dan akurat.</p></div></div>
+    <div class="col-6 col-md-3"><div class="feature-box bg-dashboard"><i class="bi bi-house-up-fill"></i><h4>Dashboard Pro</h4><p>Rincian keuangan secara real-time & Akurat harian,bulanan,dan top penjualan</p></div></div>
+
+  </div>
+</div>
+
+<div class="service-description">
+  <h3>SCAN CODE QR UNTUK KONTAK BANTUAN DISINI</h3>
+  <p>Gunakan ponsel Anda untuk scan QR berikut:</p>
+  <img src="{{ url_for('static', filename='images/qr.png') }}" alt="QR Code Kontak" style="max-width:200px;">
+ <p><div class="'mb-3">
+  Kunjungi situs website resmi kami di sini<br> 
+  <a href="https://elproject.web.id/" target="_blank" class="link-success fw-bold">
+    www.elproject.web.id
+  </a>
+</p>
+
+</div>
+
+
+
+<!-- FAQ -->
+<div class="faq-card">
+  <h2>Pertanyaan Umum</h2>
+  <button class="faq-button">Apakah Program ini berlangganan bulanan??</button>
+  <div class="faq-content">secara spesifik tidak,selama server hosting aktif tidak ada tuntutan biaya sewa</div>
+
+  <button class="faq-button">Apakah program ini bisa untuk beberapa akun?</button>
+  <div class="faq-content">Ya, program ini dirancang untuk multi-user sehingga beberapa akun bisa digunakan.</div>
+
+  <button class="faq-button">Apakah saya bisa pesan pembuatan aplikasi costum sesuai kebutuhan saya?</button>
+  <div class="faq-content">Ya,bisa silahkan scan barcode untuk kontak kami disini...</div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Toggle FAQ
+const faqButtons = document.querySelectorAll('.faq-button');
+faqButtons.forEach(button => {
+  button.addEventListener('click', () => {
+    const content = button.nextElementSibling;
+    content.style.display = content.style.display === 'block' ? 'none' : 'block';
+  });
+});
+</script>
+
+</body>
+</html>
+
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <div class="card shadow-sm mx-auto" style="max-width: 480px; border: 1px solid #ccc;">
+    <div class="card-header bg-danger text-white fw-bold text-center" style="border-bottom: 1px solid #ccc;">
+      <i class="bi bi-exclamation-triangle me-2"></i> Reset Data
+    </div>
+    <div class="card-body text-center">
+      <p class="mb-3">Di sini Anda dapat menghapus seluruh data transaksi atau produk.</p>
+      <p class="text-danger-emphasis fw-bold">Pastikan Anda yakin sebelum menekan tombol ini!</p>
+
+      <div class="d-grid gap-3 mt-4" style="max-width: 100%;">
+
+        <!-- Reset Transaksi -->
+        <form id="reset-transactions-form" action="{{ url_for('reset_data', type='transaction') }}" method="POST">
+          <button type="button" 
+                  class="btn btn-gradient-danger btn-lg reset-btn w-100 d-flex align-items-center justify-content-center" 
+                  data-type="transaction">
+            <i class="bi me-2"></i> Reset Semua Transaksi
+          </button>
+        </form>
+
+        <!-- Reset Produk -->
+        <form id="reset-products-form" action="{{ url_for('reset_data', type='product') }}" method="POST">
+          <button type="button" 
+                  class="btn btn-gradient-warning btn-lg reset-btn w-100 d-flex align-items-center justify-content-center" 
+                  data-type="product">
+            <i class="bi me-2"></i> Reset Semua Produk
+          </button>
+        </form>
+
+        <!-- Kembali -->
+        <a href="{{ url_for('dashboard') }}" 
+           class="btn btn-gradient-primary btn-lg mt-3 w-100 d-flex align-items-center justify-content-center">
+           <i class="bi me-2"></i> Kembali
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const resetButtons = document.querySelectorAll(".reset-btn");
+
+    resetButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const type = btn.getAttribute("data-type");
+            const form = btn.closest("form");
+
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: type === 'transaction' 
+                      ? "Semua transaksi akan dihapus permanen!" 
+                      : "Semua produk akan dihapus permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Tidak'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+
+<style>
+body {
+  background-color: #f8f9fa;
+}
+
+/* Card border */
+.card {
+  border-radius: 12px;
+  border: 1px solid #ccc;
+}
+
+/* Tombol Gradient Soft */
+.btn-gradient-danger {
+  background: linear-gradient(90deg, #f65c5c, #d33);
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.btn-gradient-danger:hover {
+  background: linear-gradient(90deg, #ff7b7b, #f65c5c);
+  transform: translateY(-2px);
+}
+
+.btn-gradient-warning {
+  background: linear-gradient(90deg, #f9d057, #e6b800);
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.btn-gradient-warning:hover {
+  background: linear-gradient(90deg, #ffe37b, #f9d057);
+  transform: translateY(-2px);
+}
+
+.btn-gradient-primary {
+  background: linear-gradient(90deg, #4ec4de, #2d76ce);
+  color: white;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+.btn-gradient-primary:hover {
+  background: linear-gradient(90deg, #0ead40, #35a77d);
+  transform: translateY(-2px);
+}
+</style>
+
+{% endblock %}

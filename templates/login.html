@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+  <div class="card shadow-lg p-4 rounded-4" style="max-width: 380px; width: 100%; background: #ffffffcc; backdrop-filter: blur(10px);">
+    <div class="text-center mb-4">
+      <h2 class="fw-bold text-tosca">Login</h2>
+      <p class="text-muted">Masuk ke akun Anda</p>
+    </div>
+
+    <!-- FORM LOGIN -->
+    <form method="post" action="{{ url_for('login') }}">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control rounded-pill shadow-sm placeholder-custom" id="username" name="username" placeholder="Masukkan username" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control rounded-pill shadow-sm placeholder-custom" id="password" name="password" placeholder="Masukkan password" required>
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-gradient btn-lg rounded-pill shadow-sm">
+          Masuk
+        </button>
+      </div>
+    </form>
+
+    <div class="text-center mt-3">
+      <small class="text-muted">Belum punya akun? <a href="/register" class="text-tosca fw-semibold">Daftar</a></small>
+    </div>
+  </div>
+</div>
+<style>
+/* Gradient button tosca */
+.btn-gradient {
+  background: linear-gradient(90deg, #2dc1b3, #1aa397);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+.btn-gradient:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Placeholder kecil & transparan */
+.placeholder-custom::placeholder {
+  font-size: 0.85rem;
+  color: rgba(0, 0, 0, 0.45);
+  font-weight: 400;
+}
+
+/* Warna teks tosca */
+.text-tosca {
+  color: #2dc1b3 !important;
+}
+</style>
+{% endblock %}

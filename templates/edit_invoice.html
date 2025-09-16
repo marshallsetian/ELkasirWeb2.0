@@ -1,0 +1,250 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Poppins', sans-serif; background-color: #f1f3f6; font-size: 13px; }
+.container-edit { max-width: 1200px; margin: 30px auto; }
+.card-edit, .card-preview { border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; background-color: #fff; flex: 1; display: flex; flex-direction: column; }
+h5 { font-weight: 600; margin-bottom: 15px; }
+.form-label { font-weight: 500; }
+.form-control-sm { font-size: 13px; padding: 6px 10px; }
+.invoice-container { padding: 0; }
+.invoice-preview h5 { font-size: 16px; font-weight: 600; }
+.invoice-preview .text-small { font-size: 12px; color: #555; }
+.invoice-preview table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.invoice-preview td, .invoice-preview th { padding: 5px; vertical-align: top; font-size: 13px; }
+.items th, .items td { border-bottom: 1px dashed #000; }
+.text-end { text-align: right; }
+.summary td { padding: 4px 0; }
+.row-equal { display: flex; flex-wrap: wrap; gap: 20px; }
+@media (min-width: 992px) {
+    .col-equal { display: flex; flex-direction: column; flex: 1; }
+}
+.btn-bottom { margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.btn-success { background-color: #28a745; color: #fff; border: none; font-weight: 500; }
+.btn-secondary { background-color: #6c757d; color: #fff; border: none; font-weight: 500; }
+@media print {
+  @page { size: 58mm auto; margin: 0; }
+  body { background: #fff; margin: 0; }
+  .no-print { display: none !important; }
+  hr { border: 0; border-top: 1px dashed #000; margin: 4px 0; }
+}
+
+.card-preview.invoice-preview {
+    padding: 30px 25px; /* tambah padding kiri & kanan */
+}
+
+.invoice-container {
+    padding: 0 30px; /* padding tambahan agar teks tidak mentok */
+}
+
+.invoice-preview h5 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.invoice-preview .text-small {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+
+
+.info-table td.label {
+    width: 80px;       /* lebar kolom label, sesuaikan */
+}
+
+.info-table td.colon {
+    width: 10px;       /* buat titik dua lebih rapat ke label */
+    text-align: left;  /* pastikan : di kiri kolom */
+    padding-left: 0;   /* hapus padding default */
+}
+
+.info-table td:nth-child(3) {
+    padding-left: 5px; /* jarak antara : dan value */
+}
+
+
+</style>
+
+<div class="container container-edit">
+  <div class="row row-equal">
+    <!-- Kolom Edit -->
+    <div class="col-lg-5 col-equal">
+      <div class="card-edit">
+        <h5>Edit Invoice Template</h5>
+        <form id="invoiceForm" method="POST">
+          <div class="mb-2">
+            <label class="form-label">Nama Toko</label>
+            <input type="text" name="storeName" class="form-control form-control-sm mb-2"
+                   id="storeName" value="{{ template.store_name or 'EL Project Kasir' }}">
+            <label class="form-label">Alamat Toko</label>
+            <input type="text" name="storeAddress" class="form-control form-control-sm mb-2"
+                   id="storeAddress" value="{{ template.store_address or 'Jl.Sukses No.1' }}">
+            <label class="form-label">Footer / Catatan</label>
+            <input type="text" name="footerNote" class="form-control form-control-sm"
+                   id="footerNote" value="{{ template.footer_note or 'Terima kasih sudah berbelanja 🙏' }}">
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Kolom Preview -->
+    <div class="col-lg-7 col-equal">
+      <div class="card-preview invoice-preview">
+        <div class="invoice-container">
+          <!-- Header toko -->
+          <div class="text-center mb-1 mt-3">
+            <h5 id="previewStoreName">{{ template.store_name or "Nama Toko" }}</h5>
+            <div class="text-small" id="previewStoreAddress">{{ template.store_address or "Alamat toko belum diisi" }}</div>
+          </div>
+          <hr>
+
+          <!-- Info transaksi -->
+          <table class="info-table mb-2 text-small">
+            <tr>
+              <td class="label">Invoice</td>
+              <td class="colon">:</td>
+              <td id="previewTxId">xxxxxx</td>
+            </tr>
+            <tr>
+              <td class="label">Tanggal</td>
+              <td class="colon">:</td>
+              <td id="previewDate">{{ created_at.strftime("%d-%m-%Y") }}</td>
+            </tr>
+            <tr>
+              <td class="label">Jam</td>
+              <td class="colon">:</td>
+              <td id="previewTime">{{ created_at.strftime("%H:%M") }}</td>
+            </tr>
+          </table>
+          <hr>
+
+          <!-- Daftar barang -->
+          <table class="items text-small mt-2">
+            <thead>
+              <tr>
+                <th>Produk</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody id="previewItems">
+              {% for item in items|default([]) %}
+              <tr>
+                <td>{{ item.name }}</td>
+                <td class="text-center">{{ item.qty }}</td>
+                <td class="text-end">{{ "{:,.0f}".format(item.subtotal).replace(',', '.') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <hr>
+
+          <!-- Ringkasan -->
+          <table class="summary text-small">
+            <tr>
+              <td>Total</td>
+              <td class="text-end">Rp {{ "{:,.0f}".format(subtotal|default(0)).replace(',', '.') }}</td>
+            </tr>
+            <tr>
+              <td>Diskon</td>
+              <td class="text-end">{{ "{:.0f}".format(discount|default(0)) }}%</td>
+            </tr>
+            <tr>
+              <td><strong>Subtotal</strong></td>
+              <td class="text-end"><strong>Rp {{ "{:,.0f}".format(total|default(0)).replace(',', '.') }}</strong></td>
+            </tr>
+            <tr>
+              <td>Bayar</td>
+              <td class="text-end">Rp {{ "{:,.0f}".format(paid|default(0)).replace(',', '.') }}</td>
+            </tr>
+            <tr>
+              <td>Kembalian</td>
+              <td class="text-end"><strong>Rp {{ "{:,.0f}".format(change|default(0)).replace(',', '.') }}</strong></td>
+            </tr>
+          </table>
+
+          <hr>
+          <div class="text-center text-small mb-3" id="previewFooter">
+            <em>{{ template.footer_note or "Terima kasih sudah berbelanja 🙏" }}</em>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- Tombol Simpan & POS di bawah -->
+<div class="btn-bottom mt-3" style="display: flex; gap: 8px; justify-content: center; margin-top: 12px;">
+  <button type="submit" form="invoiceForm" class="btn btn-gradient-soft btn-equal">
+    💾 Simpan Perubahan
+  </button>
+  <a href="/pos" class="btn btn-gradient-soft-2 btn-equal">
+    Kembali ke POS
+  </a>
+</div>
+
+<style>
+/* Gradient tombol */
+.btn-gradient-soft {
+  background: linear-gradient(90deg, #4ec4de, #2d76ce);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-soft-2 {
+  background: linear-gradient(90deg, #d8e157, #e6d26f);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+/* Hover efek ringan */
+.btn-gradient-soft:hover {
+  background: linear-gradient(90deg, #0ead40, #35a77d);
+  transform: translateY(-2px);
+}
+
+.btn-gradient-soft-2:hover {
+  background: linear-gradient(90deg, #c0d53e, #d6c546);
+  transform: translateY(-2px);
+}
+
+/* Samakan ukuran box tombol */
+.btn-equal {
+  display: inline-block;
+  width: 300px;      /* lebar sama untuk semua tombol */
+  padding: 0.5rem 1.2rem;
+  text-align: center;
+}
+</style>
+
+
+
+<script>
+  // Live update preview
+  const storeNameInput = document.getElementById('storeName');
+  const storeAddressInput = document.getElementById('storeAddress');
+  const footerInput = document.getElementById('footerNote');
+
+  const previewStoreName = document.getElementById('previewStoreName');
+  const previewStoreAddress = document.getElementById('previewStoreAddress');
+  const previewFooter = document.getElementById('previewFooter');
+
+  storeNameInput.addEventListener('input', () => previewStoreName.textContent = storeNameInput.value);
+  storeAddressInput.addEventListener('input', () => previewStoreAddress.textContent = storeAddressInput.value);
+  footerInput.addEventListener('input', () => previewFooter.textContent = footerInput.value);
+</script>
+
+{% endblock %}

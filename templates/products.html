@@ -1,0 +1,457 @@
+{% extends "layout.html" %}
+{% block title %}Daftar Produk{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+
+  <h4 class="fw-bold mb-3 text-center">Daftar Produk</h4>
+
+  <!-- Pencarian & Filter Compact -->
+  <div class="row g-1 mb-3">
+    <div class="col-12 col-sm-6 col-md-4 position-relative">
+      <input type="text" id="search-input" class="form-control form-control-sm rounded-pill shadow-sm" placeholder="Cari produk...">
+      <ul id="search-dropdown" class="list-group position-absolute w-100 shadow-sm"
+          style="display:none; max-height:180px; overflow-y:auto; z-index:1000;"></ul>
+    </div>
+    <div class="col-6 col-sm-3 col-md-4">
+      <select id="filter-stock" class="form-select form-select-sm rounded-pill shadow-sm">
+        <option value="all">Semua Produk</option>
+        <option value="available">Stok Tersedia</option>
+        <option value="out">Stok Habis</option>
+      </select>
+    </div>
+    <div class="col-6 col-sm-3 col-md-4">
+      <select id="sort-products" class="form-select form-select-sm rounded-pill shadow-sm">
+        <option value="name_asc">Nama A-Z</option>
+        <option value="name_desc">Nama Z-A</option>
+        <option value="price_asc">Harga Terendah</option>
+        <option value="price_desc">Harga Tertinggi</option>
+      </select>
+    </div>
+  </div>
+
+
+
+  <!-- Tabel Produk -->
+<div class="table-responsive shadow-sm rounded">
+  <table class="table table-striped table-hover table-sm mb-0 text-center table-compact" id="products-table">
+    <thead class="table-dark small">
+      <tr>
+        <th>#</th>
+        <th class="text-start">Nama</th>
+        <th>Harga</th>
+        <th>Stok</th>
+        <th>Sisa</th>
+        <th>Terjual</th>
+        
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody class="small">
+      {% for product in products %}
+      <tr data-stock="{{ product.stock - product.sold }}">
+        <td>{{ loop.index }}</td>
+        <td class="text-start">{{ product.name }}</td>
+        <td>{{ "{:,.0f}".format(product.price).replace(',', '.') }}</td>
+        <td>{{ product.stock }}</td>
+        <td>{{ product.stock - product.sold if product.stock - product.sold > 0 else 0 }}</td>
+        <td>{{ product.sold }}</td>
+        
+        
+        <td class="d-flex justify-content-center gap-1">
+          <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-outline-primary p-1" title="Edit">
+            <i class="bi bi-pencil-fill"></i>
+          </a>
+          <form id="delete-form-{{ product.id }}" action="{{ url_for('delete_product', product_id=product.id) }}" method="POST">
+    <button type="button" class="btn btn-outline-danger p-1 delete-btn" data-id="{{ product.id }}" title="Hapus">
+        <i class="bi bi-trash-fill"></i>
+    </button>
+</form>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const productId = this.getAttribute('data-id');
+            const form = document.getElementById('delete-form-' + productId);
+
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Produk ini akan dihapus permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+
+<style>
+/* Tombol sama besar */
+.btn-equal {
+    min-width: 100px;      /* lebar minimum sama untuk semua tombol */
+    padding: 0.6rem 1.2rem; /* tinggi & horizontal padding */
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+
+<style>
+/* ============================
+   Custom Gradient Buttons POS
+============================ */
+
+/* Base button */
+.btn {
+    border: 1px solid transparent;   /* default border tipis */
+    color: #fff;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 50px;            /* rounded-pill */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    user-select: none;
+}
+
+/* Primary gradient */
+.btn-primary {
+    background: linear-gradient(90deg, #2e6cd8, #2d9ec1);
+    border-color: #1aa397;  /* border seperti tombol asli */
+}
+
+/* Success gradient */
+.btn-success {
+    background: linear-gradient(90deg, #5fbd75, #32a232);
+    border-color: #28a745;
+}
+
+/* Icon spacing inside button */
+.btn i {
+    margin-right: 0.5rem;
+}
+
+/* Flex-fill untuk tombol horizontal sama lebar */
+.flex-fill {
+    flex: 1 1 auto;
+}
+
+/* Grid + flex responsive */
+.d-grid.d-md-flex {
+    gap: 0.5rem;
+}
+
+/* Mobile: stack vertical */
+@media (max-width: 576px) {
+    .d-grid.d-md-flex {
+        display: grid !important;
+    }
+    .d-grid.d-md-flex .btn {
+        width: 100%;
+    }
+}
+
+/* Efek tombol ditekan (active) */
+.btn:active {
+    transform: scale(0.97);
+    filter: brightness(0.9);
+}
+</style>
+
+<!-- HTML -->
+ 
+<div class="d-grid gap-2 d-md-flex justify-content-center mt-5">
+  <a href="{{ url_for('add_product_form') }}" 
+     class="btn btn-gradient-soft-2 flex-fill text-center">
+     <i class="bi me-1"></i> Tambah Barang
+  </a>
+  <a href="{{ url_for('export_products') }}" 
+     class="btn btn-gradient-soft flex-fill text-center">
+     <i class="bi me-1"></i> Export Data
+  </a>
+  
+</div>
+
+<style>
+/* Gradient tombol */
+.btn-gradient-soft {
+  background: linear-gradient(90deg, #25a64e, #5ddf91);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 50px;
+  padding: 0.5rem 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient-soft-2 {
+  background: linear-gradient(90deg, #6cbcf5, #199bb3);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  border-radius: 50px;
+  padding: 0.5rem 1.2rem;
+  transition: all 0.3s ease;
+}
+
+/* Hover efek ringan */
+.btn-gradient-soft:hover {
+  background: linear-gradient(90deg, #d0de75, #d6c546);
+  transform: translateY(-2px);
+}
+
+.btn-gradient-soft-2:hover {
+  background: linear-gradient(90deg, #d0de75, #d6c546);
+  transform: translateY(-2px);
+}
+</style>
+
+<style>
+
+/* =========================
+   Global Table Font Control
+========================= */
+
+/* Atur font default untuk semua tabel */
+.table {
+    font-size: 0.8rem;       /* default font size, bisa disesuaikan */    /* kolom punya lebar tetap */
+    word-wrap: break-word;   /* text panjang dibreak otomatis */
+}
+
+/* Header tabel */
+.table thead th {
+    font-size: 0.8rem;      /* header sedikit lebih besar */
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Sel tabel */
+.table tbody td {
+    font-size: 0.7rem;       /* body font */
+    vertical-align: middle;
+    text-align: center;       /* default center, bisa override per kolom */
+    word-break: break-word;  /* wrap text panjang */
+}
+
+/* Kolom tertentu tetap rata kiri */
+.table tbody td.text-start {
+    text-align: left;
+}
+
+/* Tombol aksi tetap kecil dan centered */
+.table tbody td .btn {
+    font-size: 0.7rem;       /* ukuran ikon tombol */
+    width: 29px;
+    height: 29px;
+    padding: 0;
+    display: flex;
+    align-items: right;
+    justify-content: right;
+    border-radius: 20%;
+}
+
+
+
+
+/* Reset tombol aksi di tabel */
+.table tbody td .btn,
+.table tbody td form button {
+    width: 36px;               /* ukuran tetap */
+    height: 36px;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;  /* lingkaran */
+    font-size: 1rem;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+    position: relative;
+}
+
+/* Hapus margin/padding form */
+.table tbody td form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+/* Ikon selalu centered */
+.table tbody td .btn i,
+.table tbody td form button i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: auto;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+/* Hover efek */
+.table tbody td .btn-outline-primary:hover {
+    background-color: #2e6cd8;
+    color: #fff;
+    border-color: #2e6cd8;
+}
+.table tbody td .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+}
+</style>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const table = document.getElementById("products-table");
+  const toggleButton = document.getElementById("toggleButton");
+
+  toggleButton.addEventListener("click", () => {
+    table.classList.toggle("table-compact");
+
+    if (!table.classList.contains("table-compact")) {
+      // Mode Desktop
+      toggleButton.classList.remove("btn-primary");
+      toggleButton.classList.add("btn-warning");
+      toggleButton.title = "Smartphone View";
+      toggleButton.innerHTML = '<i class="bi bi-phone-fill" style="font-size:1.2rem;"></i>';
+    } else {
+      // Mode Compact
+      toggleButton.classList.remove("btn-gradient-sm");
+      toggleButton.classList.add("btn-gradient-smk");
+      toggleButton.title = "Desktop View";
+      toggleButton.innerHTML = '<i class="bi bi-laptop" style="font-size:1.2rem;"></i>';
+    }
+  });
+});
+</script>
+<script>
+// ================== Filter & Sort ==================
+function filterAndSortProducts() {
+  const filter = document.getElementById("filter-stock").value;
+  const sort = document.getElementById("sort-products").value;
+  const rows = Array.from(document.querySelectorAll("#products-table tbody tr"));
+
+  rows.forEach(row => {
+    const stock = parseInt(row.dataset.stock);
+    let show = true;
+    if(filter==="available" && stock<=0) show=false;
+    if(filter==="out" && stock>0) show=false;
+    row.style.display = show ? "" : "none";
+  });
+
+  const tbody = document.querySelector("#products-table tbody");
+  rows.sort((a,b)=>{
+    let valA, valB;
+    if(sort.includes("name")){
+      valA = a.children[1].innerText.toLowerCase();
+      valB = b.children[1].innerText.toLowerCase();
+    } else {
+      valA = parseFloat(a.children[2].innerText.replace(/\./g,"").replace(",",".")) || 0;
+      valB = parseFloat(b.children[2].innerText.replace(/\./g,"").replace(",",".")) || 0;
+    }
+    return sort.endsWith("asc") ? valA>valB?1:-1 : valA<valB?1:-1;
+  });
+  rows.forEach(row=>tbody.appendChild(row));
+}
+document.getElementById("filter-stock").addEventListener("change", filterAndSortProducts);
+document.getElementById("sort-products").addEventListener("change", filterAndSortProducts);
+
+// ================== Pencarian Real-time ==================
+const searchInput = document.getElementById("search-input");
+const searchDropdown = document.getElementById("search-dropdown");
+searchInput.addEventListener("input", function(){
+  const query = this.value.trim().toLowerCase();
+  searchDropdown.innerHTML = "";
+  if(query.length<1){ searchDropdown.style.display="none"; return; }
+
+  const rows = Array.from(document.querySelectorAll("#products-table tbody tr"));
+  const results = rows.filter(row => row.children[1].innerText.toLowerCase().includes(query));
+  if(results.length===0){ searchDropdown.style.display="none"; return; }
+
+  results.forEach(row=>{
+    const li = document.createElement("li");
+    li.className="list-group-item list-group-item-action small";
+    li.textContent = row.children[1].innerText + " - Rp " + row.children[2].innerText;
+    li.style.cursor="pointer";
+    li.addEventListener("click", ()=>{
+      const productId = row.querySelector("a.btn-outline-primary").getAttribute("href").split("/").pop();
+      window.location.href = `/edit_product/${productId}`;
+    });
+    searchDropdown.appendChild(li);
+  });
+
+  searchDropdown.style.display="block";
+});
+</script>
+<script>
+// Toggle zoom table
+const zoomButton = document.querySelector("#zoom-toggle button");
+let zoomed = false;
+
+zoomButton.addEventListener("click", () => {
+  const tableContainer = document.querySelector(".table-responsive");
+  if(!zoomed){
+    tableContainer.style.transform = "scale(1.2)";
+    tableContainer.style.transition = "transform 0.3s";
+    zoomed = true;
+  } else {
+    tableContainer.style.transform = "scale(1)";
+    zoomed = false;
+  }
+});
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const mobileButton = document.querySelector("#mobile-toggle button");
+  const table = document.querySelector("#products-table");
+  let mobileView = false;
+
+  mobileButton.addEventListener("click", () => {
+    if(!mobileView){
+      table.classList.add("table-compact");
+      mobileView = true;
+      mobileButton.classList.add("btn-success");
+    } else {
+      table.classList.remove("table-compact");
+      mobileView = false;
+      mobileButton.classList.remove("btn-success");
+    }
+  });
+});
+</script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}

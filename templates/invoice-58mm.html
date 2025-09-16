@@ -1,0 +1,242 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* Styling khusus invoice */
+.invoice-container {
+    font-family: 'Poppins', sans-serif;
+    font-size: 11px;
+    background: #fff;
+    width: 220px;
+    margin: 20px auto;
+    padding: 2px 5px;
+}
+.invoice-container h5 { font-size: 12px; margin-bottom: 2px; }
+.invoice-container .text-small { font-size: 10px; margin-bottom: 2px; }
+.invoice-container table { width: 100%; border-collapse: collapse; }
+.invoice-container td,
+.invoice-container th { font-size: 10px; padding: 1px 1px; }
+.text-center { text-align: center; }
+.text-end { text-align: right; }
+hr { border: 0; border-top: 1px dashed #000; margin: 2px 0; }
+
+/* Barcode styling */
+.barcode-container { width: 100%; text-align: center; margin-top: 8px; display: none; }
+.barcode-img { max-width: 80px; height: auto; border: 2px solid #ccc; border-radius: 6px; padding: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+/* Tombol */
+.btn-success { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+
+/* ================= PRINT MODE ================= */
+@media print {
+  body * {
+    visibility: hidden;   /* sembunyikan semua */
+  }
+  .invoice-container, .invoice-container * {
+    visibility: visible;  /* hanya invoice yang kelihatan */
+  }
+  .invoice-container {
+    width: 220px;
+    max-width: 220px;
+    padding: 2px 5px;
+    margin: 0 auto;
+    box-shadow: none;
+  }
+  @page { size: 58mm auto; margin: 0; }
+
+  /* Hilangkan tombol & kontrol */
+  #barcodeControl,
+  #printBarcodeCheckbox,
+  .btn-success {
+      display: none !important;
+  }
+
+  .barcode-img {
+      max-width: 100px;
+      height: 100px;
+      border: none;
+      box-shadow: none;
+      padding: 2px;
+  }
+}
+
+/* Sembunyikan footer hanya di halaman invoice */
+footer {
+    display: none !important;
+}
+
+/* khusus invoice di layar */
+@media screen {
+  body.invoice-page {
+    display: flex;
+    justify-content: center;
+    background: #f0f0f0;  /* opsional, biar beda */
+  }
+  .zoom-preview {
+    zoom: 1.25;              /* perbesar 150% hanya invoice */
+    margin-top: 20px;
+  }
+}
+
+
+</style>
+
+
+<!-- Struk / Invoice -->
+<div class="invoice-container zoom-preview">
+  <!-- Header Toko -->
+  <div class="text-center mb-1 mt-3">
+    <h5>{{ template.store_name or "Nama Toko" }}</h5>
+    <div class="text-small">{{ template.store_address or "Alamat toko belum diisi" }}</div>
+  </div>
+  <hr>
+
+  <!-- Info Transaksi -->
+  <table class="info-table mb-1 text-small">
+    <tr>
+      <td class="label">No.Transaksi</td>
+      <td class="colon">:</td>
+      <td>{{ tx_id or "xxxxxxx" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Tanggal</td>
+      <td class="colon">:</td>
+      <td>{{ created_at.strftime("%d-%m-%Y") if created_at else "—" }}</td>
+    </tr>
+    <tr>
+      <td class="label">Jam</td>
+      <td class="colon">:</td>
+      <td>{{ created_at.strftime("%H:%M") if created_at else "—" }}</td>
+    </tr>
+  </table>
+  <hr>
+
+  <!-- Daftar Barang -->
+  <table class="items text-small mt-1">
+    <thead>
+      <tr>
+        <th>Produk</th>
+        <th class="text-center">Qty</th>
+        <th class="text-end">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item['name'] }}</td>
+        <td class="text-center">{{ item['qty'] }}</td>
+        <td class="text-end">{{ "{:,.0f}".format(item.subtotal).replace(',', '.') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <hr>
+
+  <!-- Ringkasan -->
+  <table class="summary text-small">
+    <tr>
+      <td>Total</td>
+      <td class="text-end">Rp {{ "{:,.0f}".format(subtotal).replace(',', '.') }}</td>
+    </tr>
+    <tr>
+      <td>Diskon</td>
+      <td class="text-end">{{ "{:.0f}".format(discount) }}%</td>
+    </tr>
+    <tr>
+      <td><strong>Subtotal</strong></td>
+      <td class="text-end"><strong>Rp {{ "{:,.0f}".format(total).replace(',', '.') }}</strong></td>
+    </tr>
+    <tr>
+      <td>Bayar</td>
+      <td class="text-end">Rp {{ "{:,.0f}".format(paid).replace(',', '.') }}</td>
+    </tr>
+    <tr>
+      <td>Kembalian</td>
+      <td class="text-end"><strong>Rp {{ "{:,.0f}".format(change).replace(',', '.') }}</strong></td>
+    </tr>
+  </table>
+  <hr>
+
+  <div class="text-center text-small mb-3 mt-2">
+    <em>{{ template.footer_note or "Terima kasih sudah berbelanja 🙏" }}</em>
+  </div>
+
+  <!-- Container QR/Barcode di dalam struk -->
+  <div class="barcode-container mb-3" id="barcodeContainer">
+    <img id="barcodeImg" class="barcode-img" src="" alt="Barcode">
+  </div>
+
+</div>
+
+<!-- Kontrol Cetak QR/Barcode -->
+<div class="text-center mt-3" id="barcodeControl">
+    <!-- Checkbox -->
+    <input type="checkbox" id="printBarcodeCheckbox" style="transform: scale(1.5);">
+    
+    <!-- Label di bawah checkbox -->
+    <div class="text-small mt-1" style="font-size: 11px;">Cetak Barcode</div>
+
+    <!-- Tombol Cetak -->
+    <div class="mt-2">
+        <button onclick="printInvoice()" class="btn-success">🖨️ Cetak</button>
+    </div>
+
+
+<style>
+#barcodeControl {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#barcodeControl .btn-success {
+    margin-top: 5px;
+    padding: 5px 12px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+</style>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const checkbox = document.getElementById("printBarcodeCheckbox");
+    const barcodeContainer = document.getElementById("barcodeContainer");
+    const barcodeImg = document.getElementById("barcodeImg");
+    const barcodeLink = "{{ template.barcode_link or '' }}";
+
+    function updateBarcodeDisplay() {
+        if(checkbox.checked && barcodeLink){
+            barcodeContainer.style.display = "block";
+            barcodeImg.src = `/generate_barcode_temp?barcode=${barcodeLink}`;
+        } else {
+            barcodeContainer.style.display = "none";
+            barcodeImg.src = "";
+        }
+    }
+
+    updateBarcodeDisplay();
+    checkbox.addEventListener("change", updateBarcodeDisplay);
+  });
+
+  function printInvoice(){
+    const checkbox = document.getElementById("printBarcodeCheckbox");
+    const barcodeContainer = document.getElementById("barcodeContainer");
+    const barcodeImg = document.getElementById("barcodeImg");
+    const barcodeLink = "{{ template.barcode_link or '' }}";
+
+    if(checkbox.checked && barcodeLink){
+        barcodeContainer.style.display = "block";
+        barcodeImg.src = `/generate_barcode_temp?barcode=${barcodeLink}`;
+    } else {
+        barcodeContainer.style.display = "none";
+        barcodeImg.src = "";
+    }
+
+    window.print();
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+body { font-family: 'Poppins', sans-serif; font-size: 12px; background: #f8f9fa; }
+.invoice-container { background: #fff; max-width: 480px; width: 95%; margin: auto; padding: 12px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.invoice-container h5 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.invoice-container .text-small { font-size: 11px; color: #555; }
+.invoice-container table { width: 100%; border-collapse: collapse; }
+.invoice-container td, .invoice-container th { padding: 4px; vertical-align: top; font-size: 12px; }
+.items th, .items td { border-bottom: 1px solid #ddd; }
+.text-center { text-align: center; }
+.text-end { text-align: right; }
+.summary td { padding: 2px 0; }
+.info-table td { font-size: 11px; padding: 2px 4px; }
+.info-table td.label { width: 70px; white-space: nowrap; }
+.info-table td.colon { width: 10px; text-align: center; }
+.btn-group { margin-top: 12px; display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+.btn-group a, .btn-group button { padding: 6px 12px; font-size: 12px; border-radius: 4px; text-decoration: none; cursor: pointer; }
+.btn-success { background: #28a745; color: #fff; border: none; }
+.btn-secondary { background: #6c757d; color: #fff; border: none; }
+</style>
+
+<div class="invoice-container">
+  <!-- Header Toko -->
+  <div class="text-center mb-2">
+    <h5>{{ template.store_name|default("Nama Toko") }}</h5>
+    <div class="text-small">{{ template.store_address|default("Alamat toko belum diisi") }}</div>
+  </div>
+  <hr>
+
+  <!-- Info Transaksi -->
+  <table class="info-table mb-2">
+    <tr><td class="label">Kasir</td><td class="colon">:</td><td>{{ kasir_name|default("UNKNOWN") }}</td></tr>
+    <tr><td class="label">Invoice</td><td class="colon">:</td><td>{{ tx_id|default("TEMP") }}</td></tr>
+    <tr><td class="label">Tanggal</td><td class="colon">:</td><td>{{ created_at.strftime("%d-%m-%Y") }}</td></tr>
+    <tr><td class="label">Jam</td><td class="colon">:</td><td>{{ created_at.strftime("%H:%M") }}</td></tr>
+    <tr><td class="label">Status</td><td class="colon">:</td><td>{{ status|default("draft") }}</td></tr>
+  </table>
+
+  <!-- Daftar Barang -->
+  <table class="items mb-2">
+    <thead>
+      <tr><th>Produk</th><th class="text-center">Qty</th><th class="text-end">Harga</th><th class="text-end">Total</th></tr>
+    </thead>
+    <tbody>
+      {% for item in items|default([]) %}
+      <tr>
+        <td>{{ item.name|default("") }}</td>
+        <td class="text-center">{{ item.qty|default(0) }}</td>
+        <td class="text-end">{{ "{:,.0f}".format((item.price|default(0))|float).replace(',', '.') }}</td>
+       <td class="text-end">{{ "{:,.0f}".format(item.qty|int * item.price|float).replace(",", ".") }}</td>
+
+        
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <hr>
+
+  <!-- Ringkasan -->
+  <table class="summary mb-2">
+    <tr><td>Total</td><td class="text-end">Rp {{ "{:,.0f}".format((subtotal|default(0))|float).replace(',', '.') }}</td></tr>
+    <tr><td>Diskon</td><td class="text-end">{{ discount|default(0)|int }}%</td></tr>
+    <tr><td>Total Diskon</td><td class="text-end">{{ "{:,.0f}".format((subtotal|default(0)|float) * (discount|default(0)|float) / 100).replace(",", ".") }}</td></tr>
+    <tr><td><strong>Subtotal</strong></td><td class="text-end"><strong>Rp {{ "{:,.0f}".format((total|default(0))|float).replace(',', '.') }}</strong></td></tr>
+    <tr><td>Bayar</td><td class="text-end">Rp {{ "{:,.0f}".format((paid|default(0))|float).replace(',', '.') }}</td></tr>
+    <tr><td>Kembalian</td><td class="text-end"><strong>Rp {{ "{:,.0f}".format((change|default(0))|float).replace(',', '.') }}</strong></td></tr>
+  </table>
+
+  <hr>
+  <div class="text-center text-small mb-3">
+    <em>{{ template.footer_note|default("Terima kasih sudah berbelanja 🙏") }}</em>
+  </div>
+
+  <!-- Tombol Confirm & Cetak -->
+  <div class="text-center mt-3">
+    {% if status == "draft" %}
+    <button id="confirmTransaction" class="btn btn-success">Confirm & Cetak</button>
+    {% else %}
+    <button onclick="window.print()" class="btn btn-primary">Cetak</button>
+    {% endif %}
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+{% if status == "draft" %}
+document.addEventListener("DOMContentLoaded", function(){
+  const btn = document.getElementById("confirmTransaction");
+  if (btn) {
+    btn.addEventListener("click", ()=>{
+      fetch("/pos/confirm_transaction/{{ tx_id }}", {method:"POST"})
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.status==="ok"){
+          Swal.fire({
+            icon:'success',
+            title:"Transaksi dikonfirmasi!",
+            timer: 1200,
+            showConfirmButton: false
+          }).then(()=>{
+            window.location.href = "/invoice-58mm/{{ tx_id }}";
+          });
+        } else {
+          Swal.fire({icon:'error', title:data.message});
+        }
+      })
+      .catch(err=>{
+        Swal.fire({icon:'error', title:"Terjadi error", text:err.message});
+      });
+    });
+  }
+});
+{% endif %}
+</script>
+
+
+{% endblock %}

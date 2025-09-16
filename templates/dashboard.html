@@ -1,0 +1,376 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<!-- Import Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="row mb-4">
+  <div class="col-12 text-center">
+    <h2 class="fw-bold" style="letter-spacing: 1px; text-shadow: 2px 2px 3px rgba(0,0,0,0.2);">
+      Welcome to back<br>{{ username }}!
+    </h2>
+    <hr style="border-top: 3px solid #43cea2; width: 60px; margin: 0 auto;">
+  </div>
+</div>
+
+<div class="container mt-3">
+  <div class="d-grid gap-2 mb-3">
+    <a href="{{ url_for('export_transactions') }}" class="btn btn-primary-custom">
+      Download Transaksi
+    </a>
+  </div>
+
+  <!-- Cards Summary -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card card-shadow bg-products text-center py-3 highlight-card">
+      <h6 class="fw-bold">Total Produk</h6>
+      <p class="fs-2 fw-bold mb-0 counter-glow" id="totalProducts"><span>0</span></p>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card card-shadow bg-sold text-center py-3 highlight-card">
+      <h6 class="fw-bold">Total Transaksi</h6>
+      <p class="fs-2 fw-bold mb-0 counter-glow" id="totalTransactions"><span>0</span></p>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card card-shadow bg-revenue text-center py-3 highlight-card">
+      <h6 class="fw-bold">Total Pendapatan</h6>
+      <p class="fs-2 fw-bold mb-0 counter counter-glow" id="totalRevenueCard">Rp <span>0</span></p>
+    </div>
+  </div>
+</div>
+
+  <!-- Charts -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card card-shadow border-0 chart-card">
+        <div class="card-body p-3">
+          <h6 class="text-center fw-bold mb-2" style="font-size: 0.9rem;">Penjualan Harian</h6>
+          <canvas id="dailySalesChart" style="max-height:200px;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ <div class="row g-4">
+  <div class="col-md-6 d-flex">
+    <div class="card card-shadow border-0 chart-card flex-fill">
+      <div class="card-body p-3">
+        <h6 class="text-center fw-bold mb-2" style="font-size: 0.9rem;">Pendapatan Bulanan</h6>
+        <canvas id="monthlySalesChart" class="chart-fade"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 d-flex">
+    <div class="card card-shadow border-0 chart-card flex-fill">
+      <div class="card-body p-3">
+        <h6 class="text-center fw-bold mb-2" style="font-size: 0.9rem;">Produk Terlaris</h6>
+        <canvas id="topProductsChart" class="chart-fade"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<style>
+
+.chart-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card canvas {
+  flex: 1; /* canvas mengisi sisa tinggi card-body */
+}
+/* Fade-in animasi chart */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chart-fade {
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* Samakan tinggi card chart */
+.chart-card {
+  min-height: 270px; /* sesuaikan biar pas */
+  display: flex;
+  flex-direction:column;
+  justify-content: center;
+}
+.chart-card canvas {
+  max-height: 250px;
+}
+
+  /* ===== Body & Typography ===== */
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #e0f7f1; /* soft tosca */
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ===== Navbar ===== */
+  .navbar {
+    background: linear-gradient(90deg, #2dc1b3, #1aa397);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .navbar .nav-link { color:#fff; transition:0.2s; }
+  .navbar .nav-link:hover { color:#1d1c18; transform:scale(1.05); }
+  .navbar-brand { font-size:1.3rem; color:#fff; }
+
+  /* ===== Alerts ===== */
+  .alert {
+    border-radius: 15px; /* round alert */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    font-size: 0.9rem;
+    transition: transform 0.2s ease;
+  }
+  .alert:hover { transform: scale(1.02); }
+
+  /* ===== Card Styling ===== */
+  .card, .card-white, .highlight-card {
+    border-radius: 20px; /* melengkung */
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 15px;
+    background: #ffffff; /* default putih, bisa diubah */
+  }
+  .card:hover, .card-white:hover, .highlight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  /* ===== Highlight Cards ===== */
+  .highlight-value {
+    border-radius: 15px;
+    color: #fff;
+    padding: 8px 12px;
+    display: inline-block;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .highlight-value:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  /* Contoh warna / gradient */
+  .bg-revenue { background: linear-gradient(135deg,#ff9d42,#f2d533d0); color: #fff;}
+  .bg-products { background: linear-gradient(135deg,#f75a7f,#cb26cb);color: #fff; }
+  .bg-sold { background: linear-gradient(135deg,#5ef6dd,#019f8f);color: #fff; }
+
+  /* ===== Tables Rounded & Colored ===== */
+  table {
+    border-radius: 15px; /* melengkung */
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: #fff; /* default putih */
+  }
+  .table th {
+    background: linear-gradient(90deg,#20c997,#2dc1b3);
+    color: #fff;
+    font-weight: 600;
+  }
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(45,193,179,0.05); /* soft stripe */
+  }
+  .table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.03);
+  }
+
+  /* ===== Footer Sticky ===== */
+  footer {
+    flex-shrink: 0;
+    background: linear-gradient(90deg,#2dc1b3,#1aa397);
+    color: #fff;
+    font-weight: 500;
+    text-align: center;
+    padding: 1.5rem 0;
+    border-radius: 15px 15px 0 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+  }
+
+  /* ===== Content Container ===== */
+  .content {
+    flex: 1 0 auto;
+    padding: 20px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 576px) {
+    .card, .highlight-card { padding: 12px; border-radius:15px; }
+    table { font-size:0.85rem; }
+  }
+
+/* ===== Button Primary Gradient ===== */
+.btn-primary-custom {
+  background: linear-gradient(135deg, #5ebaf3, #264fcb); /* gradient utama */
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px; /* bulat lembut */
+  padding: 0.5rem 1.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+
+/* Hover effect */
+.btn-primary-custom:hover {
+  background: linear-gradient(135deg, #264fcb, #5ebaf3); /* gradient terbalik */
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+}
+
+/* Active / click effect */
+.btn-primary-custom:active {
+  transform: scale(0.97);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+/* Disabled state */
+.btn-primary-custom:disabled {
+  background: linear-gradient(135deg, #a0c4f0, #7890d1);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+
+</style>
+
+
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function() {
+  fetch("{{ url_for('chart_data_view') }}")
+    .then(res => res.json())
+    .then(data => {
+
+      console.log(data); // Debug data
+
+      // Update Total Produk & Transaksi
+      document.getElementById('totalProducts').innerText = data.total_products || 0;
+      document.getElementById('totalTransactions').innerText = data.total_transactions || 0;
+
+      // Animate Total Revenue
+      const totalRevenue = Number(data.total_revenue || 0);
+      animateNumber(document.getElementById('totalRevenueCard'), 0, totalRevenue, 1500);
+
+          // Hourly Sales Chart
+    const ctxHourly = document.getElementById('dailySalesChart').getContext('2d');
+    new Chart(ctxHourly, {
+      type: 'line',
+      data: {
+        labels: data.hourly_labels || [], // ['0','1',...,'23']
+        datasets: [{
+          label: 'Per Jam',
+          data: data.hourly_sales || [], // array 24 item
+          fill: true,
+          borderColor: '#43cea2',
+          backgroundColor: 'rgba(67,206,162,0.2)',
+          tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#43cea2'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10, family:'Poppins' } } },
+          y: { grid: { display: true }, ticks: { font: { size: 10, family:'Poppins' }, callback: v => 'Rp ' + Number(v).toLocaleString('id-ID') } }
+        }
+      }
+    });
+
+
+      // Daily Revenue Chart
+    const ctxDailyRevenue = document.getElementById('monthlySalesChart').getContext('2d');
+    const gradientBar = ctxDailyRevenue.createLinearGradient(0,0,0,400);
+    gradientBar.addColorStop(0, 'rgba(67,206,162,0.8)');
+    gradientBar.addColorStop(1, 'rgba(24,90,157,0.3)');
+
+    new Chart(ctxDailyRevenue, {
+      type: 'bar',
+      data: {
+        labels: data.daily_revenue_labels || [], // ['01','02',...,'31'] atau sesuai tanggal
+        datasets: [{
+          data: data.daily_revenue || [], // array total pendapatan tiap hari
+          backgroundColor: gradientBar,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{
+          y:{ticks:{callback:v=>'Rp '+Number(v).toLocaleString('id-ID')}}
+        }
+      }
+    });
+
+        // Top Products Pie Chart
+    const ctxTop = document.getElementById('topProductsChart').getContext('2d');
+    new Chart(ctxTop, {
+        type: 'pie',
+        data: {
+            labels: data.top_products_labels || [],
+            datasets: [{
+                data: data.top_products_sales || [],
+                backgroundColor: ['#43cea2','#1de9b6','#1dc4e9','#185a9d','#43cea2','#1de9b6']
+            }]
+        },
+        options: {
+            responsive:true,
+            plugins: {
+                legend: {
+                    position:'bottom',
+                    labels: { font:{ family:'Poppins', size:12 } }
+                }
+            }
+        }
+    });
+
+
+
+
+
+    });
+});
+
+// Animate Number Function
+function animateNumber(element, start, end, duration) {
+    let startTime = null;
+    const span = element.querySelector('span');
+    function animate(currentTime) {
+        if (!startTime) startTime = currentTime;
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        const value = Math.floor(progress * (end - start) + start);
+        if(span){ span.innerText = value.toLocaleString('id-ID'); }
+        if(progress < 1){ requestAnimationFrame(animate); }
+    }
+    requestAnimationFrame(animate);
+}
+</script>
+
+{% endblock %}
