@@ -43,7 +43,10 @@ def init_routes(app):
 #=========================== HOME ===========================#
     @app.route("/")
     def home():
-        return redirect(url_for("login"))
+        if current_user.is_authenticated:
+            return render_template("index.html")  # tampilkan halaman utama
+        else:
+            return redirect(url_for("login"))
 
 #=========================== REGISTER ===========================#
 
